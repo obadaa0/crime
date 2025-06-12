@@ -62,14 +62,14 @@ class ReportController extends Controller
             }
         }
         catch(Exception $e){
-            return response()->json(['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()],400);
         }
         catch(ConnectionException $e)
         {
-            return response()->json(['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()],400);
         }
         catch(RequestException $e){
-            return response()->json(['error' => $e->getMessage()]);
+            return response()->json(['error' => $e->getMessage()],400);
         };
         $validData['media'] = MediaHelper::StoreMedia('reports',$request);
         // $validData['crime_type'] = "fighting";
