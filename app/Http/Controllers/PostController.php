@@ -252,7 +252,7 @@ public function showPost(Post $post) {
             'user_id' => $user->id
         ]);
         // return $news;
-$response = Http::post('https://153e-185-184-195-145.ngrok-free.app/summarize', [
+$response = Http::post('https://19f5-212-102-51-98.ngrok-free.app/summarize', [
     'texts' => $postArray
 ]);
     if($response->successful())
