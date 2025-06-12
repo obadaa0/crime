@@ -34,7 +34,7 @@ class ReactionController extends Controller
 
         if(!$user)
         {
-            return response()->json(['message' => 'unAuth'],401);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'],401);
         }
         $post =Post::findOrFail($validated['post_id']);
         $existingReaction = PostReaction::withTrashed()
@@ -44,11 +44,11 @@ class ReactionController extends Controller
         if ($existingReaction) {
             if ($existingReaction->trashed()) {
                 $existingReaction->restore();
-                return response()->json(['message' => 'Reaction restored']);
+                return response()->json(['message' => 'لقد تمت اضافة اعجاب بنجاح']);
              }
             if ($existingReaction->reaction_type === $validated['reaction_type']) {
                 $existingReaction->delete();
-                return response()->json(['message' => 'Reaction']);
+                return response()->json(['message' => 'تمت اضافة اعجاب بنجاح']);
             }
         } else {
             PostReaction::create([
@@ -59,7 +59,7 @@ class ReactionController extends Controller
             if($user->id != $post->User->id){
                 $this->NotificationService->sendLikeNotification($user,$post->User,$post->id);
             }
-            return response()->json(['message' => 'Reaction added']);
+            return response()->json(['message' => 'تمت اضافة اعجاب']);
         }
     }
     public function getLikePost(Post $post)
@@ -76,7 +76,7 @@ class ReactionController extends Controller
      $user = AuthHelper::getUserFromToken($request);
 
         if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 401);
         }
 
         $reactions = $post->reactions;

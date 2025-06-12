@@ -47,7 +47,7 @@ class CommentController extends Controller
         $this->NotificationService->sendCommentNotification($user,$post->User,$post->id,$comment);
     }
     return response()->json([
-        'message' => 'comment add successfully',
+        'message' => 'تمت اضافة التعليق بنجاح',
         'data' => $comment
     ],201);
 }
@@ -61,13 +61,12 @@ class CommentController extends Controller
         if($comment->user_id != $user->id)
         {
             return response()->json([
-                'message' => "can't delete this comment"
+                'message' => "لا يمكنك حذف هذا التعليق"
             ], 403);
         }
         $comment->delete();
         return response()->json([
-
-            'message' => 'delete comment successfully !'
+            'message' => 'تم حذف التعليق بنجاح'
         ]);
     }
     public function getAllCommentsPost(Post $post,Request $request)
@@ -92,8 +91,9 @@ class CommentController extends Controller
         }
         if($comments->isEmpty())
         {
-            return response()->json(['message' => 'no comment yet'],200);
+            return response()->json(['message' => 'لا يوجد تعليقات حتى الان'],200);
         }
-        return response()->json(['data' => $comments]);
+        return response()->json(['message' => 'كل التعليقات',
+            'data' => $comments]);
     }
 }

@@ -35,7 +35,7 @@ class PostController extends Controller
             $user = AuthHelper::getUserFromToken($request);
             if(!$user){
                 return response()->json([
-                    'message' => 'user not found !'
+                    'message' => 'قم بتسجيل الدخول اولا'
                 ]);
             }
             try{
@@ -45,7 +45,7 @@ class PostController extends Controller
                 if($response->successful())
                 {
                     if($response['prediction'] != "real"){
-                        return response()->json(['message' => ' text is fake'],400);
+                        return response()->json(['message' => ' النص مزيف تاكد من الخبر اولا'],400);
                     }
                 }
             }
@@ -66,13 +66,13 @@ class PostController extends Controller
             ]);
             return response()->json([
                 'success' => true,
-                'message' => 'Post created successfully',
+                'message' => 'تمت اضافة المنشور بنجاح',
                 'data' => $post
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create post',
+                'message' => 'فشل اضافة المنشور',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -83,12 +83,12 @@ class PostController extends Controller
 
         if(!$user){
             return response()->json([
-                'message' => 'user not found !'
+                'message' => 'قم بتسجيل الدخول اولا'
             ]);
         }
         if(!$post){
             return response()->json([
-                'message' => 'post not found !'
+                'message' => 'لا يوجد منشور'
             ],404);
         }
         $post=$post
@@ -97,16 +97,16 @@ class PostController extends Controller
         if(!$post)
         {
             return response()->json([
-                'message' => 'post not found !'
+                'message' => 'لا يوجد منشور'
             ],404);
         }
         if($post->delete()){
             return response()->json([
-                'mesasge' => 'post deleted'
+                'mesasge' => 'تم حذف المنشور'
             ],200);
         }
         return response()->json([
-            'message' => ' Error'
+            'message' => ' حصل خطا ما حاول مرى اخرى'
         ],501);
     }
     public function getPosts(Request $request)
@@ -114,12 +114,12 @@ class PostController extends Controller
      $user = AuthHelper::getUserFromToken($request);
 
         if (!$user) {
-            return response()->json(['message' => 'user not found'], 404);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 404);
         }
         $posts=$user->posts;
         if(!$posts)
         {
-            return response()->json(['message' => "can't find any post"],200);
+            return response()->json(['message' => "لا يوجد اي منشور الى الان"],200);
         }
         foreach($posts as $post)
         {
@@ -143,7 +143,7 @@ class PostController extends Controller
                 $post->media = "";
             }
         }
-        return response()->json(['message' => 'Successfully response','data'=>
+        return response()->json(['message' => 'تم عرض جميع المنشورات بنجاح','data'=>
         [
         'posts' => $posts
         ] ],200);
@@ -154,12 +154,12 @@ class PostController extends Controller
      $user = AuthHelper::getUserFromToken($request);
 
         if (!$user) {
-            return response()->json(['message' => 'user not found'], 404);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 404);
         }
         $posts=Post::inRandomOrder()->get();
         if(!$posts)
         {
-            return response()->json(['message' => "can't find any post"],204);
+            return response()->json(['message' => "لا يوجد منشور"],204);
         }
         $userPost = [];
         $otherPost = [];
@@ -229,7 +229,7 @@ public function showPost(Post $post) {
     {
         $user = AuthHelper::getUserFromToken($request);
         if(!$user){
-            return response()->json(['message' => 'Login Please'],401);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'],401);
         }
 
         // Carbon::setWeekStartsAt(Carbon::SATURDAY);

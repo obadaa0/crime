@@ -21,10 +21,10 @@ class FriendshipController extends Controller
     $user = AuthHelper::getUserFromToken($request);
 
     if (!$user) {
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 401);
     }
     if ($user->id === $friend->id) {
-        return response()->json(['message' => 'Cannot send request to yourself'], 422);
+        return response()->json(['message' => 'لا يمكنك ارسال طلب صداقة لنفسك'], 422);
     }
     $existingRequest = Friend::where([
         ['user_id', $user->id],
@@ -34,7 +34,7 @@ class FriendshipController extends Controller
         ['friend_id', $user->id],
     ])->first();
     if ($existingRequest) {
-        return response()->json(['message' => 'Friend request already exists'], 422);
+        return response()->json(['message' => 'طلب الصداقة معلق'], 422);
     }
     $friendCreate = Friend::create([
         'user_id' => $user->id,
@@ -43,7 +43,7 @@ class FriendshipController extends Controller
     ]);
     $this->NotificationService->sendFriendRequestNotification($user,$friend);
     return response()->json([
-        'message' => 'Friend request sent successfully',
+        'message' => 'تم ارسال طلب الصداقة بنجاح ',
         'data' => $friendCreate
     ], 201);
 }
@@ -51,16 +51,16 @@ class FriendshipController extends Controller
     {
        try{
         if (!$friend) {
-            return response()->json(['message' => 'Friend request not found'], 404);
+            return response()->json(['message' => 'لا يوجد طلب الصداقة'], 404);
         }
             $user = AuthHelper::getUserFromToken($request);
         if ($user->id !== $friend->friend_id) {
-            return response()->json(['message' => 'Unauthorized to accept this request'], 403);
+            return response()->json(['message' => 'غير مصرح ب قبول طلب الصداقة'], 403);
         }
         $friend->acceptRequest();
         $this->NotificationService->acceptFriendRequestNotification($user,$friend->sender);
         return response()->json([
-            'message' => 'Friend request accepted successfully',
+            'message' => 'تم قبول طلب الصداقة بنجاح',
             'friendship' => $friend
         ]);}
         catch(Exception $e)
@@ -71,18 +71,18 @@ class FriendshipController extends Controller
     public function rejectRequest(Request $request,Friend $friend)
 {
     if (!$friend) {
-        return response()->json(['message' => 'request not found'], 404);
+        return response()->json(['message' => 'لا يوجد طلب صداقة'], 404);
     }
         $user = AuthHelper::getUserFromToken($request);
     if ($user->id !== $friend->friend_id) {
-        return response()->json(['message' => 'unAuth'], 403);
+        return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 403);
     }
     if ($friend->status === 'accepted') {
-        return response()->json(['message' => 'cannot reject this request'], 400);
+        return response()->json(['message' => 'لا يمكن رفض طلب الصداقة'], 400);
     }
     $friend->rejectRequest();
     return response()->json([
-        'message' => 'reject successfully',
+        'message' => 'تم رفض طلب الصداقة بنجاح',
         'friendship' => $friend
     ]);
 }
@@ -90,12 +90,12 @@ class FriendshipController extends Controller
     {
      $user = AuthHelper::getUserFromToken($request);
         if (!$user) {
-            return response()->json(['message' => 'user not found'], 404);
+            return response()->json(['message' => 'لا يوجد مستخدم'], 404);
         }
         $friends = $user->friends();
         if($friends->isEmpty())
             {
-                return response()->json(['message' => 'no friend']);
+                return response()->json(['message' => 'لا يوجد اصدقاء لديك الان']);
             }
         return response()->json(['data' => $friends]);
     }
@@ -104,7 +104,7 @@ class FriendshipController extends Controller
      $user = AuthHelper::getUserFromToken($request);
 
         if (!$user) {
-            return response()->json(['message' => 'user not found'], 404);
+            return response()->json(['message' => 'لا يوجد مستخدم'], 404);
         }
         $requests = Friend::with('sender')
         ->where('friend_id',$user->id)
@@ -118,7 +118,7 @@ class FriendshipController extends Controller
 
         if(!$user)
         {
-            return response()->json(['message' => "unAuth"],401);
+            return response()->json(['message' => "قم بتسجيل الدخول اولا"],401);
         }
         $user->loadCount(['pendingRequest as pendingRequest ']);
         return response()->json(['data' => $user->pendingRequest]);
@@ -128,7 +128,7 @@ class FriendshipController extends Controller
      $user = AuthHelper::getUserFromToken($request);
 
     if (!$user) {
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 401);
     }
     $existingRequest = Friend::where([
         ['user_id', $user->id],
@@ -148,10 +148,10 @@ class FriendshipController extends Controller
       $user = AuthHelper::getUserFromToken($request);
 
     if (!$user) {
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 401);
     }
     if ($user->id === $friend->id) {
-        return response()->json(['message' => 'Cannot send request to yourself'], 422);
+        return response()->json(['message' => 'لا يمكن قبول/رفض طلب الصداقة لنفسك'], 422);
     }
     $existingRequest = Friend::where([
         ['user_id', $user->id],
@@ -162,16 +162,16 @@ class FriendshipController extends Controller
     ])->where('status','pending')->first();
     if ($existingRequest) {
         $existingRequest->delete();
-        return response()->json(['message' => 'Friend request deleted successfully']);
+        return response()->json(['message' => 'تم حذف طلب الصداقة بنجاح']);
     }
-    return response()->json(['message' => 'request not found'],404);
+    return response()->json(['message' => 'طلب الصداقة غير موجود'],404);
     }
     public function getFriend(User $user)
     {
         $friend = $user->friends();
         if($friend->isEmpty())
         {
-                return response()->json(['message' => 'no friend']);
+                return response()->json(['message' => 'لا يوجد اصدقاء']);
         }
         return response()->json(['data' => $friend]);
     }

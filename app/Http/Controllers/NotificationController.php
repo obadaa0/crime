@@ -13,7 +13,7 @@ class NotificationController extends Controller
      $user = AuthHelper::getUserFromToken($request);
         if(!$user)
         {
-            return response()->json(['message' => "unAuth"],401);
+            return response()->json(['message' => "قم بتسجيل الدخول اولا"],401);
         }
         $notifications = $user->notifications->sortByDesc('created_at')->values();
         $notifications = $this->addNotificationInfo($notifications);
@@ -25,10 +25,10 @@ class NotificationController extends Controller
 
         if(!$user)
         {
-            return response()->json(['message' => "unAuth"],401);
+            return response()->json(['message' => "قم بتسجيل الدخول اولا"],401);
         }
         $notification->markAsRead();
-         return response()->json(['message' => 'notif read succesfully']);
+         return response()->json(['message' => 'تمت قراءة الاشعار']);
     }
     public function markAllAsRead(Request $request)
     {
@@ -36,10 +36,10 @@ class NotificationController extends Controller
 
         if(!$user)
         {
-            return response()->json(['message' => "unAuth"],401);
+            return response()->json(['message' => "قم بتسجيل الدخول اولا"],401);
         }
          $user->notifications()->where('is_read', false)->update(['is_read' => true]);
-        return response()->json(['message' => 'notifs read successfully']);
+        return response()->json(['message' => 'تمت قراءة كل الاشعارات']);
     }
 
     public function numberOfNotification(Request $request)
@@ -48,7 +48,7 @@ class NotificationController extends Controller
 
         if(!$user)
         {
-            return response()->json(['message' => "unAuth"],401);
+            return response()->json(['message' => "قم بتسجيل الدخول اولا"],401);
         }
         $user->loadCount([
             'notifications as notifications'

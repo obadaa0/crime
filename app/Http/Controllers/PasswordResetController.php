@@ -30,7 +30,7 @@ class PasswordResetController extends Controller
             'code' => $code,
             'expires_at' => Carbon::now()->addMinutes(10),
         ]);
-        return response()->json(['message' => 'Verification code sent.']);
+        return response()->json(['message' => 'تم ارسال رقم التحقق راجع بريدك الالكتروني']);
     }
     public function resetPassword(Request $request)
 {
@@ -41,14 +41,14 @@ class PasswordResetController extends Controller
     try {
         $user = User::where('email', $request['email'])->firstOrFail();
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        return response()->json(['message' => 'User not found!'], 400);
+        return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 400);
     }
     $reset = PasswordReset::where('user_id', $user->id)
         ->where('used', false)
         ->where('expires_at', '>', now())
         ->first();
     if (!$reset) {
-        return response()->json(['message' => 'Invalid or expired code.'], 400);
+        return response()->json(['message' => 'رقم التحقق غير صحيح او منتهي'], 400);
     }
     $user->update(['password' => bcrypt($request['password'])]);
     $reset->update(['used' => true]);
@@ -58,7 +58,7 @@ class PasswordResetController extends Controller
     {
         return $e->getMessage();
     }
-    return response()->json(['message' => 'Password has been reset successfully.']);
+    return response()->json(['message' => 'تم تعديل كلمة المرور بنجاح']);
 }
     public function checkEmail(Request $request)
     {
@@ -72,7 +72,7 @@ class PasswordResetController extends Controller
         }
         $user = User::where('email',$validData['email'])->first();
         if(!$user){
-            return response()->json(['message' => 'User Not Found !'],404);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'],404);
         }
         try{
 
@@ -86,7 +86,7 @@ class PasswordResetController extends Controller
         }catch(Exception $e){
             return response()->json(['message' =>$e],400);
         }
-        return response()->json(['message' => 'send email successfuly']);
+        return response()->json(['message' => 'تم ارسال طلب التحقق راجع بريدك الالكتروني']);
     }
     public function checkCode(Request $request)
     {
@@ -100,7 +100,7 @@ class PasswordResetController extends Controller
         }
         $user = User::where('email' ,$validData['email']);
         if(!$user){
-            return response()->json(['message' => "User Not Found !"],404);
+            return response()->json(['message' => "قم بتسجيل الدخول اولا"],404);
         }
         $reset = PasswordReset::where('user_id', $user->pluck('id'))
         ->where('used', false)
@@ -108,7 +108,7 @@ class PasswordResetController extends Controller
         ->where('expires_at', '>', now())
         ->first();
     if (!$reset) {
-        return response()->json(['message' => 'Invalid or expired code.'], 400);
+        return response()->json(['message' => 'رقم التحقق غير صحيح او منتهي'], 400);
     }
     return response(null,200);
     }
@@ -127,16 +127,16 @@ class PasswordResetController extends Controller
         $token = PersonalAccessToken::findToken($request->bearerToken());
         if(!$token)
         {
-            return response()->json(['message' => 'unAuth'],401);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'],401);
         }
         $user = $token->tokenable;
         if(!$user)
         {
-            return response()->json(['message' => 'unAuth'],401);
+            return response()->json(['message' => 'قم بتسجيل الدخول اولا'],401);
         }
         if(!Hash::check($validData['old_password'],$user->password))
         {
-            return response()->json(['message' => 'Not correct password'],401);
+            return response()->json(['message' => 'كلمة المرور خاطئة'],401);
         }
         $user->update(['password' => bcrypt($request['password'])]);
         return response()->json(['message' => 'update password successfully']);
