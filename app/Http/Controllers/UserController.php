@@ -21,6 +21,8 @@ class UserController extends Controller
             $validate=$request->validate([
                 'firstname' => 'string',
                 'lastname' => 'string',
+                'father_name' => 'required|string',
+                'mother_name' => 'required|string',
                 'email' => 'email|required',
                 'birthday' => 'date|required',
                 'gender' => 'required|in:male,female',
