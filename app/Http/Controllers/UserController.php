@@ -184,7 +184,7 @@ class UserController extends Controller
             return response()->json(['message' => 'UnAuth'],401);
         }
 
-         $friendsCount = $user->all_friends_count;
+         $friendsCount = $user->friends()->count();
          $user['friends'] = $friendsCount;
         $isFriend = Friend::where(function ($query) use ($user, $userLog) {
     $query->where([
