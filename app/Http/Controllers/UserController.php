@@ -82,34 +82,36 @@ class UserController extends Controller
         $token=$user->createToken('auth_token')->plainTextToken;
         return response()->json(['data' =>['token' => $token]],200);
     }
-    public function editProfile(Request $request)
-    {
-        try
-        {
-            $validData= $request->validate([
-                'image' => 'file|mimes:jpeg,png,jpg',
-                'bio' => 'string'
-            ]);
-        }
-            catch (\Illuminate\Validation\ValidationException $e) {
-                return response()->json(['message' =>$e->errors()]);
-            }
-            $user = AuthHelper::getUserFromToken($request);
-            if(!$user){
-                return response()->json([
-                    'message' => 'user not found !'
-                ],404);
-            }
-            if(!$validData['image']){
-                $validData['image'] = $user->profile_image;
-            }
-            $path = MediaHelper::StoreMedia('profileImage',$request,'image');
-            $addProfileImage=User::find($user->id)->update([
-                'profile_image' => $path,
-                'bio' =>$request->input('bio')
-            ]);
-            return response()->json(['message' => 'Image Profile update successfully'],200);
+   public function editProfile(Request $request)
+{
+    try {
+        $validData = $request->validate([
+            'image' => 'nullable|file|mimes:jpeg,png,jpg',
+            'bio' => 'nullable|string'
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json(['message' => $e->errors()], 422);
     }
+    $user = AuthHelper::getUserFromToken($request);
+    if (!$user) {
+        return response()->json([
+            'message' => 'User not found!'
+        ], 404);
+    }
+    $updateData = [];
+    if ($request->hasFile('image')) {
+        $path = MediaHelper::StoreMedia('profileImage', $request, 'image');
+        $updateData['profile_image'] = $path;
+    }
+    if ($request->has('bio')) {
+        $updateData['bio'] = $request->input('bio');
+    }
+    if (!empty($updateData)) {
+        User::find($user->id)->update($updateData);
+        return response()->json(['message' => 'Profile updated successfully'], 200);
+    }
+    return response()->json(['message' => 'Nothing to update'], 400);
+}
     public function addBio(Request $request)
     {
             $user=AuthHelper::getUserFromToken($request);
