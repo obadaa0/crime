@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redis;
 use App\Helpers\AuthHelper;
 use App\Helpers\MediaHelper;
+use App\Models\News;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
@@ -37,27 +38,27 @@ class PostController extends Controller
                     'message' => 'user not found !'
                 ]);
             }
-        //     try{
-        //         $response = Http::timeout(100)->post('https://2512-185-184-195-145.ngrok-free.app/predict',[
-        //             'text' => $validatedData['content']
-        //         ]);
-        //         if($response->successful())
-        //         {
-        //             if($response['prediction'] != "real"){
-        //                 return response()->json(['message' => ' text is fake'],400);
-        //             }
-        //         }
-        //     }
-        //       catch(Exception $e){
-        //     return response()->json(['error' => $e->getMessage()]);
-        // }
-        // catch(ConnectionException $e)
-        // {
-        //     return response()->json(['error' => $e->getMessage()]);
-        // }
-        // catch(RequestException $e){
-        //     return response()->json(['error' => $e->getMessage()]);
-        // };
+            try{
+                $response = Http::timeout(100)->post('https://2512-185-184-195-145.ngrok-free.app/predict',[
+                    'text' => $validatedData['content']
+                ]);
+                if($response->successful())
+                {
+                    if($response['prediction'] != "real"){
+                        return response()->json(['message' => ' text is fake'],400);
+                    }
+                }
+            }
+              catch(Exception $e){
+            return response()->json(['error' => $e->getMessage()]);
+        }
+        catch(ConnectionException $e)
+        {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+        catch(RequestException $e){
+            return response()->json(['error' => $e->getMessage()]);
+        };
             $post=Post::create([
                 'user_id' =>$user->id,
                 'content' => $request['content'],
@@ -224,8 +225,13 @@ public function showPost(Post $post) {
     return response()->json(['data' => [$post]]);
 }
 
-    public function summarizeNews()
+    public function summarizeNews(Request $request)
     {
+        $user = AuthHelper::getUserFromToken($request);
+        if(!$user){
+            return response()->json(['message' => 'Login Please'],401);
+        }
+
         // Carbon::setWeekStartsAt(Carbon::SATURDAY);
         // Carbon::setWeekEndsAt(Carbon::FRIDAY);
         $startOfWeek = Carbon::now()->startOfWeek();
@@ -235,12 +241,26 @@ public function showPost(Post $post) {
         $query->where('role', 'police');
     })
     ->pluck('content');
+
     $postArray = $posts->toArray();
+    $newsText = '';
+    foreach($postArray as $postt){
+        $newsText .= $postt;
+    }
+            $news = News::create([
+            'news' => $newsText,
+            'user_id' => $user->id
+        ]);
+        // return $news;
 $response = Http::post('https://153e-185-184-195-145.ngrok-free.app/summarize', [
     'texts' => $postArray
 ]);
     if($response->successful())
     {
+        // $news = News::create([
+        //     'news' => array_values($posts->toArray()),
+        //     'user_id' => $user->id
+        // ]);
         return response()->json(['data' => $response['summaries']]);
     }
     return $response->json();
