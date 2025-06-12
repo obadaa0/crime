@@ -30,8 +30,6 @@ class PasswordResetController extends Controller
             'code' => $code,
             'expires_at' => Carbon::now()->addMinutes(10),
         ]);
-        // Mail::to($user->email)
-        // ->queue(new PasswordResetCodeMail($user,$code));
         return response()->json(['message' => 'Verification code sent.']);
     }
     public function resetPassword(Request $request)
@@ -144,7 +142,3 @@ class PasswordResetController extends Controller
         return response()->json(['message' => 'update password successfully']);
     }
 }
-
-
-//php artisan queue:work
-// php artisan queue:table

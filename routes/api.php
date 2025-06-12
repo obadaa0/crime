@@ -6,6 +6,7 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\reportPostController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\Route;
     Route::post('/post/reaction',[ReactionController::class,'reactToPost']);
     Route::get('/post/{post}/like',[ReactionController::class,'getLikePost']);
     Route::get('/post/{post}/like-user',[ReactionController::class,'getLikedUser']);
+    Route::post('/post/report',[reportPostController::class,'create']);
     //comment
     Route::post('/comment/add/{post}',[CommentController::class,'addComment']);
     Route::delete('/comment/delete/{comment}',[CommentController::class,'deleteComment']);

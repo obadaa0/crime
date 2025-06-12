@@ -107,4 +107,8 @@ class User extends Authenticatable
     {
         return $this->hasMany(PostReaction::class);
     }
+    public function reporterPost()
+    {
+        return $this->hasMany(report_post::class,'reporter');
+    }
 }
