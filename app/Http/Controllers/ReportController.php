@@ -50,7 +50,7 @@ class ReportController extends Controller
                 'file',
                 file_get_contents($file->getRealPath()),
                  $file->getClientOriginalName()
-            )->post(' https://0048-212-102-51-98.ngrok-free.app/classify');
+            )->post('https://0048-212-102-51-98.ngrok-free.app/classify');
             if($checkFromAI->successful())
             {
                 $result = $checkFromAI->json();
