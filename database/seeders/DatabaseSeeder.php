@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         });
         User::create([
             'firstname' => 'hamza',
-            'lastname' => 'saadeldeel',
+            'lastname' => 'saadaldeel',
             'email' => 'hamzasaadaldeen2002@gmail.com',
             'birthday' => '2002/7/17',
             'gender' => 'male',
