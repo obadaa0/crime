@@ -38,7 +38,7 @@ class ReportController extends Controller
                 'location' => 'string'
             ]);
         } catch (\Illuminate\Validation\ValidationException $e){
-            return response()->json(['message' => $e->errors()]);
+            return response()->json(['message' => $e->errors()],400);
         }
         $user = AuthHelper::getUserFromToken($request);
         if(!$user){
