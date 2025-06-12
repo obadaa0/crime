@@ -100,6 +100,9 @@ class UserController extends Controller
                     'message' => 'user not found !'
                 ],404);
             }
+            if(!$validData['image']){
+                $validData['image'] = $user->profile_image;
+            }
             $path = MediaHelper::StoreMedia('profileImage',$request,'image');
             $addProfileImage=User::find($user->id)->update([
                 'profile_image' => $path,
