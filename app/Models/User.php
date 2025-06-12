@@ -24,7 +24,9 @@ class User extends Authenticatable
         'phone',
         'profile_image',
         'bio',
-        'role'
+        'role',
+        'mother_name',
+        'father_name'
     ];
         protected static function booted()
     {
