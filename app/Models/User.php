@@ -26,7 +26,10 @@ class User extends Authenticatable
         'bio',
         'role',
         'mother_name',
-        'father_name'
+        'father_name',
+        'live',
+        'education',
+        'work'
     ];
         protected static function booted()
     {
