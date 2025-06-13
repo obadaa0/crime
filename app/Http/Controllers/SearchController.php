@@ -9,11 +9,17 @@ use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
-
 public function search(Request $request)
 {
-    $search = $_GET['query'];
-    if(empty($search)) {
+    $search = $request->input('query');
+    if (is_array($search)) {
+        return response()->json([
+            'message' => 'Search word must be a string, not an array',
+            'users' => [],
+            'posts' => []
+        ], 400);
+    }
+    if (empty($search)) {
         return response()->json([
             'message' => 'Search word is required',
             'users' => [],
@@ -23,6 +29,7 @@ public function search(Request $request)
     $posts = Post::where('content', 'LIKE', '%'.$search.'%')
                 ->limit(20)
                 ->get();
+
     $users = User::where('firstname', 'LIKE', '%'.$search.'%')
                 ->orWhere('lastname', 'LIKE', '%'.$search.'%')
                 ->limit(10)
