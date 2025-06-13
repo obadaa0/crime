@@ -48,7 +48,6 @@ public function search(Request $request)
         'posts' => $posts
     ]);
 }
-
     public function isYourself($users,$loggedInUserId){
         foreach($users as $user){
             if($user->id == $loggedInUserId){
@@ -60,9 +59,4 @@ public function search(Request $request)
         }
         return $users;
     }
-
-
-
-
-
 }
