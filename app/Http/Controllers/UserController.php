@@ -23,15 +23,13 @@ class UserController extends Controller
                 'lastname' => 'string',
                 'father_name' => 'required|string',
                 'mother_name' => 'required|string',
-                'live' => 'required|string',
-                'education' => 'required|string',
-                'work' => 'required|string',
                 'email' => 'email|required',
                 'birthday' => 'date|required',
                 'gender' => 'required|in:male,female',
                 'password' => 'required|min:8|confirmed',
                 'password_confirmation' => 'required',
                 'phone' => 'required|digits:10',
+                'national_number' => 'required'
             ]);
         }
         catch (\Illuminate\Validation\ValidationException $e) {
@@ -90,6 +88,12 @@ class UserController extends Controller
     try {
         $validData = $request->validate([
             'image' => 'nullable|file|mimes:jpeg,png,jpg',
+            'street' => 'required|string',
+            'city' => 'required|string',
+            'country' =>'required|string',
+            'work' => 'required|string',
+            'live' => 'required|string',
+            'education' => 'required|string',
             'bio' => 'nullable|string'
         ]);
     } catch (\Illuminate\Validation\ValidationException $e) {
