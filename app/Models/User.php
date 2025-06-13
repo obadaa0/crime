@@ -29,7 +29,8 @@ class User extends Authenticatable
         'father_name',
         'live',
         'education',
-        'work'
+        'work',
+        'badge_number'
     ];
         protected static function booted()
     {
