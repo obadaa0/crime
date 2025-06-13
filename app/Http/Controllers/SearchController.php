@@ -26,17 +26,11 @@ public function search(Request $request)
             'posts' => []
         ], 400);
     }
-    $posts = Post::with(['User',
-    'reactions' => function($query){
-            $query->count();
-        },
-        'comment' => function($query){
-            $query->count();
-        }
-    ])->where('content', 'LIKE', '%'.$search.'%')
+    $posts = Post::with('User')
+                ->withCount('reactions')
+                ->withCount('comment')->where('content', 'LIKE', '%'.$search.'%')
                 ->limit(20)
                 ->get();
-
     $users = User::where('firstname', 'LIKE', '%'.$search.'%')
                 ->where('role',['user','police'])
                 ->orWhere('lastname', 'LIKE', '%'.$search.'%')
