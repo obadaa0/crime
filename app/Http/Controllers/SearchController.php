@@ -13,7 +13,6 @@ class SearchController extends Controller
 public function search(Request $request)
 {
     $search = $_GET['query'];
-
     if(empty($search)) {
         return response()->json([
             'message' => 'Search word is required',
