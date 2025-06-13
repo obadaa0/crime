@@ -36,6 +36,11 @@ public function search(Request $request)
                 ->orWhere('lastname', 'LIKE', '%'.$search.'%')
                 ->limit(10)
                 ->get();
+                if($users->isEmpty() && $posts->isEmpty()){
+                    return response()->json([
+                        'message' => 'لا يوجد نتائج',
+                    ]);
+                }
     return response()->json([
         'message' => 'Search results',
         'users' => $users,
