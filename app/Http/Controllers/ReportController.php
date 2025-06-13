@@ -4,31 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Helpers\AuthHelper;
 use App\Helpers\MediaHelper;
-use App\Models\Report;
-use App\Models\User;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\PersonalAccessToken;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 class ReportController extends Controller
 {
-    public function show(Report $report,Request $request)
-    {
-    $report = Report::with('User')->paginate(10);
-    return $report;
-    }
-    // public function show(Request $request)
-    // {
-    //     $numberOfReport = $request->input('per_page',10);
-    //     $user = User::whereHas('reports')->with('reports')->paginate($numberOfReport);
-    //     return $user;
-    // }
-
     public function create(Request $request)
     {
         try{
@@ -75,15 +58,5 @@ class ReportController extends Controller
         // $validData['crime_type'] = "fighting";
        $report = $user->reports()->create($validData);
         return response()->json(['message'=>'report send successfully', 'data' =>$report],200);
-    }
-    public function setProgress(Report $report)
-    {
-         $report->progress();
-        return $report;
-        }
-    public function setResolved(Report $report)
-    {
-        $report->resolved();
-        return $report;
     }
 }

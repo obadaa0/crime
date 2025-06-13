@@ -4,15 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Friend;
 use App\Models\Post;
-use App\Models\PostReaction;
-use App\Models\User;
-use Doctrine\Common\Lexer\Token;
 use Illuminate\Http\Request;
-use PhpParser\Node\Expr\Cast\String_;
-use Illuminate\Support\Str;
-use Laravel\Sanctum\PersonalAccessToken;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Redis;
 use App\Helpers\AuthHelper;
 use App\Helpers\MediaHelper;
 use App\Models\News;
@@ -20,6 +12,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class PostController extends Controller
@@ -64,6 +57,7 @@ class PostController extends Controller
                 'content' => $request['content'],
                 'media' => $path
             ]);
+            Cache::forget('post_'.$user->id);
             return response()->json([
                 'success' => true,
                 'message' => 'تمت اضافة المنشور بنجاح',
@@ -79,7 +73,7 @@ class PostController extends Controller
     }
     public function delete(Request $request,Post $post)
     {
-      $user = AuthHelper::getUserFromToken($request);
+        $user = AuthHelper::getUserFromToken($request);
 
         if(!$user){
             return response()->json([
@@ -101,6 +95,7 @@ class PostController extends Controller
             ],404);
         }
         if($post->delete()){
+            Cache::forget('post_'.$user->id);
             return response()->json([
                 'mesasge' => 'تم حذف المنشور'
             ],200);
@@ -156,67 +151,71 @@ class PostController extends Controller
         if (!$user) {
             return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 404);
         }
-        $posts=Post::inRandomOrder()->get();
-        if(!$posts)
-        {
-            return response()->json(['message' => "لا يوجد منشور"],204);
-        }
-        $userPost = [];
-        $otherPost = [];
-        $filterPost = [];
-        foreach($posts as $post)
-        {
-        $isFriend = Friend::where([
-        ['user_id', $user->id],
-        ['friend_id', $post->user_id],
-    ])->orWhere([
-        ['user_id', $post->user_id],
-        ['friend_id', $user->id],
-    ])->exists();
-    $post['is_friend'] = $isFriend;
-            if($post->user_id == $user->id)
+        $cacheKey = 'post_'.$user->id;
+        $ttl =now()->addMinutes(10);
+        $filterPost =
+        Cache::remember($cacheKey,$ttl,function () use($user){
+            $posts=Post::inRandomOrder()->get();
+            if(!$posts)
             {
-                if($post->created_at->isToday())
-                {
-                    $post['his_post'] = true;
-                    $hasLiked = $post->reactions()
-                ->where('reaction_type', 'like')
-                ->where('user_id', $user->id)
-                ->exists();
-                $post->has_liked = $hasLiked;
-                $post->loadCount([
-                    'reactions as likes'
-            ]);
-            $post->loadCount([
-                'comment as comments'
-            ]);
+                return [];
+            }
+            $userPost = [];
+            $otherPost = [];
+            foreach($posts as $post)
+            {
+                $isFriend = Friend::where([
+                    ['user_id', $user->id],
+                    ['friend_id', $post->user_id],
+                    ])->orWhere([
+                        ['user_id', $post->user_id],
+                        ['friend_id', $user->id],
+                        ])->exists();
+                        $post['is_friend'] = $isFriend;
+                        if($post->user_id == $user->id)
+                        {
+                            if($post->created_at->isToday())
+                            {
+                                $post['his_post'] = true;
+                                $hasLiked = $post->reactions()
+                                ->where('reaction_type', 'like')
+                                ->where('user_id', $user->id)
+                                ->exists();
+                                $post->has_liked = $hasLiked;
+                                $post->loadCount([
+                                    'reactions as likes'
+                                ]);
+                                $post->loadCount([
+                                    'comment as comments'
+                                ]);
             $post['user_name'] = $user->firstname . ' ' . $user->lastname;
             $post['profile_image'] = $user->profile_image;
-                    $userPost[] =$post;
-                }
-                continue;
-            }
-            $hasLiked = $post->reactions()
-            ->where('reaction_type', 'like')
-            ->where('user_id', $user->id)
-            ->exists();
-            $post->has_liked = $hasLiked;
-            $post->loadCount([
-                'reactions as likes'
-            ]);
-            $post->loadCount([
-                'comment as comments'
-            ]);
-            $post['user_name'] = $post->User->firstname . ' ' . $post->User->lastname;
-            $post['profile_image'] = $post->user->profile_image;
-            $otherPost[] = $post;
+            $userPost[] =$post;
         }
-        $filterPost =array_merge($userPost,$otherPost);
-        return response()->json(['message' => 'Successfully response','data'=>
-        [
-        'posts' => $filterPost
-        ] ],200);
+        continue;
     }
+    $hasLiked = $post->reactions()
+    ->where('reaction_type', 'like')
+    ->where('user_id', $user->id)
+    ->exists();
+    $post->has_liked = $hasLiked;
+    $post->loadCount([
+        'reactions as likes'
+    ]);
+    $post->loadCount([
+        'comment as comments'
+    ]);
+    $post['user_name'] = $post->User->firstname . ' ' . $post->User->lastname;
+    $post['profile_image'] = $post->user->profile_image;
+    $otherPost[] = $post;
+}
+    return array_merge($userPost,$otherPost);
+});
+return response()->json(['message' => 'Successfully response','data'=>
+[
+    'posts' => $filterPost
+    ] ],200);
+}
 public function showPost(Post $post) {
     $post->loadCount('reactions as likes')
         ->loadCount('comment as comments');

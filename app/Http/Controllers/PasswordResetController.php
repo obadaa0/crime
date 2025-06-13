@@ -14,24 +14,6 @@ use App\Mail\PasswordResetCodeMail;
 
 class PasswordResetController extends Controller
 {
-    public function sendCode(Request $request)
-    {
-    try{
-        $validData = $request->validate([
-            'email' =>"required|email"
-        ]);
-    }catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json(['message' =>$e->errors() ]);
-    }
-        $user =User::where('email',$validData['email']);
-        $code = rand(100000, 999999);
-        PasswordReset::create([
-            'user_id' => $user->id,
-            'code' => $code,
-            'expires_at' => Carbon::now()->addMinutes(10),
-        ]);
-        return response()->json(['message' => 'تم ارسال رقم التحقق راجع بريدك الالكتروني']);
-    }
     public function resetPassword(Request $request)
 {
     $request->validate([
