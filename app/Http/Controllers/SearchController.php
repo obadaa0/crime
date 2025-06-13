@@ -11,6 +11,11 @@ class SearchController extends Controller
 {
 public function search(Request $request)
 {
+    $user = AuthHelper::getUserFromToken($request);
+    if(!$user){
+        return response()->json(['message' => 'قم بتسجيل الدخول اولا'],401);
+    }
+
     $search = $request->input('query');
     if (is_array($search)) {
         return response()->json([
@@ -36,15 +41,34 @@ public function search(Request $request)
                 ->orWhere('lastname', 'LIKE', '%'.$search.'%')
                 ->limit(10)
                 ->get();
+
                 if($users->isEmpty() && $posts->isEmpty()){
                     return response()->json([
                         'message' => 'لا يوجد نتائج',
                     ]);
                 }
+                $users = $this->isYourself($users,$user->id);
     return response()->json([
         'message' => 'Search results',
         'users' => $users,
         'posts' => $posts
     ]);
 }
+
+    public function isYourself($users,$loggedInUserId){
+        foreach($users as $user){
+            if($user->id == $loggedInUserId){
+                $user['isYou'] =true;
+            }
+            else{
+                $user['isYou'] =false;
+            }
+        }
+        return $users;
+    }
+
+
+
+
+
 }

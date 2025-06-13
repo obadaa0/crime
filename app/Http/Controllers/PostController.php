@@ -178,16 +178,12 @@ class PostController extends Controller
                             {
                                 $post['his_post'] = true;
                                 $hasLiked = $post->reactions()
-                                ->where('reaction_type', 'like')
+                                // ->where('reaction_type', 'like')
                                 ->where('user_id', $user->id)
                                 ->exists();
                                 $post->has_liked = $hasLiked;
-                                $post->loadCount([
-                                    'reactions as likes'
-                                ]);
-                                $post->loadCount([
-                                    'comment as comments'
-                                ]);
+                                $post->withCount('reactions as likes')
+                                ->withCount('comment as comments');
             $post['user_name'] = $user->firstname . ' ' . $user->lastname;
             $post['profile_image'] = $user->profile_image;
             $userPost[] =$post;
@@ -195,16 +191,12 @@ class PostController extends Controller
         continue;
     }
     $hasLiked = $post->reactions()
-    ->where('reaction_type', 'like')
+    // ->where('reaction_type', 'like')
     ->where('user_id', $user->id)
     ->exists();
     $post->has_liked = $hasLiked;
-    $post->loadCount([
-        'reactions as likes'
-    ]);
-    $post->loadCount([
-        'comment as comments'
-    ]);
+    $post->withCount('reactions as likes')
+         ->withCount('comment as comments');
     $post['user_name'] = $post->User->firstname . ' ' . $post->User->lastname;
     $post['profile_image'] = $post->user->profile_image;
     $otherPost[] = $post;
