@@ -178,7 +178,6 @@ class PostController extends Controller
                             {
                                 $post['his_post'] = true;
                                 $hasLiked = $post->reactions()
-                                // ->where('reaction_type', 'like')
                                 ->where('user_id', $user->id)
                                 ->exists();
                                 $post->has_liked = $hasLiked;
@@ -191,7 +190,6 @@ class PostController extends Controller
         continue;
     }
     $hasLiked = $post->reactions()
-    // ->where('reaction_type', 'like')
     ->where('user_id', $user->id)
     ->exists();
     $post->has_liked = $hasLiked;

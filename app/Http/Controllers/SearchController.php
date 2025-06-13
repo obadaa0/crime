@@ -37,17 +37,11 @@ public function search(Request $request)
                 ->limit(20)
                 ->get();
     $users = User::where('firstname', 'LIKE', '%'.$search.'%')
-                ->where('role',['user','police'])
+                ->whereIn('role',['user','police'])
                 ->orWhere('lastname', 'LIKE', '%'.$search.'%')
                 ->limit(10)
                 ->get();
-
-                if($users->isEmpty() && $posts->isEmpty()){
-                    return response()->json([
-                        'message' => 'لا يوجد نتائج',
-                    ]);
-                }
-                $users = $this->isYourself($users,$user->id);
+    $users = $this->isYourself($users,$user->id);
     return response()->json([
         'message' => 'Search results',
         'users' => $users,
