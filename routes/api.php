@@ -53,4 +53,4 @@ use Illuminate\Support\Facades\Route;
     //report
     Route::post('report/create',[ReportController::class,'create'])->middleware('customThrottle:1,0.083');
     //search
-    Route::get('/search',[SearchController::class,'search']);
+    Route::post('/search',[SearchController::class,'search']);
