@@ -113,6 +113,24 @@ class UserController extends Controller
     if ($request->has('bio')) {
         $updateData['bio'] = $request->input('bio');
     }
+        if ($request->has('street')) {
+        $updateData['street'] = $request->input('street');
+    }
+        if ($request->has('city')) {
+        $updateData['city'] = $request->input('city');
+    }
+        if ($request->has('country')) {
+        $updateData['country'] = $request->input('country');
+    }
+        if ($request->has('work')) {
+        $updateData['work'] = $request->input('work');
+    }
+        if ($request->has('live')) {
+        $updateData['live'] = $request->input('live');
+    }
+        if ($request->has('education')) {
+        $updateData['education'] = $request->input('education');
+    }
     if (!empty($updateData)) {
         User::find($user->id)->update($updateData);
         return response()->json(['message' => 'Profile updated successfully'], 200);
