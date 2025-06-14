@@ -55,7 +55,7 @@ class ReportController extends Controller
             return response()->json(['error' => $e->getMessage()],400);
         };
         $validData['media'] = MediaHelper::StoreMedia('reports',$request);
-        // $validData['crime_type'] = "fighting";
+        $validData['crime_type'] = "fighting";
        $report = $user->reports()->create($validData);
         return response()->json(['message'=>'report send successfully', 'data' =>$report],200);
     }

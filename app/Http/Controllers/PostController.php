@@ -144,68 +144,72 @@ class PostController extends Controller
         ] ],200);
     }
 
-    public function getAllPost(Request $request)
-    {
-     $user = AuthHelper::getUserFromToken($request);
+     public function getAllPost(Request $request)
+{
+    $user = AuthHelper::getUserFromToken($request);
 
-        if (!$user) {
-            return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 404);
-        }
-        $cacheKey = 'post_'.$user->id;
-        $ttl =now()->addMinutes(10);
-        $filterPost =
-        Cache::remember($cacheKey,$ttl,function () use($user){
-            $posts=Post::inRandomOrder()->get();
-            if(!$posts)
-            {
-                return [];
-            }
-            $userPost = [];
-            $otherPost = [];
-            foreach($posts as $post)
-            {
-                $isFriend = Friend::where([
-                    ['user_id', $user->id],
-                    ['friend_id', $post->user_id],
-                    ])->orWhere([
-                        ['user_id', $post->user_id],
-                        ['friend_id', $user->id],
-                        ])->exists();
-                        $post['is_friend'] = $isFriend;
-                        if($post->user_id == $user->id)
-                        {
-                            if($post->created_at->isToday())
-                            {
-                                $post['his_post'] = true;
-                                $hasLiked = $post->reactions()
-                                ->where('user_id', $user->id)
-                                ->exists();
-                                $post->has_liked = $hasLiked;
-                                $post->withCount('reactions as likes')
-                                ->withCount('comment as comments');
-            $post['user_name'] = $user->firstname . ' ' . $user->lastname;
-            $post['profile_image'] = $user->profile_image;
-            $userPost[] =$post;
-        }
-        continue;
+    if (!$user) {
+        return response()->json(['message' => 'user not found'], 404);
     }
-    $hasLiked = $post->reactions()
-    ->where('user_id', $user->id)
-    ->exists();
-    $post->has_liked = $hasLiked;
-    $post->withCount('reactions as likes')
-         ->withCount('comment as comments');
-    $post['user_name'] = $post->User->firstname . ' ' . $post->User->lastname;
-    $post['profile_image'] = $post->user->profile_image;
-    $otherPost[] = $post;
+
+    $posts = Post::where('isNews', '!=', true)->inRandomOrder()->get();
+    if ($posts->isEmpty()) {
+        return response()->json(['message' => "can't find any post"], 204);
+    }
+    $news = Post::where('isNews', true)->latest()->first();
+    if ($news) {
+        $posts->prepend($news);
+    }
+    $userPost = [];
+    $otherPost = [];
+    foreach ($posts as $post) {
+
+        if ($post->isNews && is_string($post->content)) {
+    $decoded = json_decode($post->content, true);
+    if (is_array($decoded)) {
+        $post->content = implode("\n", $decoded);
+    }
 }
-    return array_merge($userPost,$otherPost);
-});
-return response()->json(['message' => 'Successfully response','data'=>
-[
-    'posts' => $filterPost
-    ] ],200);
+        if ($news && $post->id === $news->id) {
+            $post['is_news'] = true;
+        }
+        $isFriend = Friend::where(function ($query) use ($user, $post) {
+            $query->where('user_id', $user->id)
+                  ->where('friend_id', $post->user_id);
+        })->orWhere(function ($query) use ($user, $post) {
+            $query->where('user_id', $post->user_id)
+                  ->where('friend_id', $user->id);
+        })->exists();
+        $post['is_friend'] = $isFriend;
+        $post->loadCount([
+            'reactions as likes',
+            'comment as comments'
+        ]);
+        $hasLiked = $post->reactions()
+            ->where('reaction_type', 'like')
+            ->where('user_id', $user->id)
+            ->exists();
+        $post->has_liked = $hasLiked;
+        $post['user_name'] = $post->user->firstname . ' ' . $post->user->lastname;
+        $post['profile_image'] = $post->user->profile_image;
+        if ($post->user_id == $user->id && $post->created_at->isToday()) {
+            $post['his_post'] = true;
+            $userPost[] = $post;
+            continue;
+        }
+
+
+        $otherPost[] = $post;
+    }
+    $filterPost = array_merge($userPost, $otherPost);
+    return response()->json([
+        'message' => 'Successfully response',
+        'data' => [
+            'posts' => $filterPost
+        ]
+    ], 200);
 }
+
 public function showPost(Post $post) {
     $post->loadCount('reactions as likes')
         ->loadCount('comment as comments');
@@ -213,45 +217,4 @@ public function showPost(Post $post) {
     $post->setRelation('user', null);
     return response()->json(['data' => [$post]]);
 }
-
-    public function summarizeNews(Request $request)
-    {
-        $user = AuthHelper::getUserFromToken($request);
-        if(!$user){
-            return response()->json(['message' => 'قم بتسجيل الدخول اولا'],401);
-        }
-
-        // Carbon::setWeekStartsAt(Carbon::SATURDAY);
-        // Carbon::setWeekEndsAt(Carbon::FRIDAY);
-        $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->endOfWeek();
-        $posts = Post::whereBetween('created_at', [$startOfWeek, $endOfWeek])
-    ->whereHas('user', function ($query) {
-        $query->where('role', 'police');
-    })
-    ->pluck('content');
-
-    $postArray = $posts->toArray();
-    $newsText = '';
-    foreach($postArray as $postt){
-        $newsText .= $postt;
-    }
-            $news = News::create([
-            'news' => $newsText,
-            'user_id' => $user->id
-        ]);
-        // return $news;
-$response = Http::post('https://19f5-212-102-51-98.ngrok-free.app/summarize', [
-    'texts' => $postArray
-]);
-    if($response->successful())
-    {
-        // $news = News::create([
-        //     'news' => array_values($posts->toArray()),
-        //     'user_id' => $user->id
-        // ]);
-        return response()->json(['data' => $response['summaries']]);
-    }
-    return $response->json();
-    }
 }

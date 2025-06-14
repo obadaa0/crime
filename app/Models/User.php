@@ -30,7 +30,11 @@ class User extends Authenticatable
         'live',
         'education',
         'work',
-        'badge_number'
+        'badge_number',
+        'national_number',
+        'country',
+        'city',
+        'street'
     ];
         protected static function booted()
     {

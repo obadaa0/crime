@@ -31,7 +31,8 @@ public function search(Request $request)
             'posts' => []
         ], 400);
     }
-    $posts = Post::with('User')
+    $posts = Post::where('isNews','!=',true)
+                ->with('User')
                 ->withCount('reactions')
                 ->withCount('comment')->where('content', 'LIKE', '%'.$search.'%')
                 ->limit(20)

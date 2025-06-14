@@ -43,6 +43,7 @@ class UserController extends Controller
         {
             return response()->json(['message' => 'User has been exist'],400);
         }
+        $validate['national_number'] = $request->input('national_number');
         $user=User::create($validate);
         $token=$user->createToken('auth_token')->plainTextToken;
         return response()->json(['data' =>['token' => $token]],200);
@@ -67,18 +68,21 @@ class UserController extends Controller
         ->first();
         if(!$user)
         {
-            return response()->json(['data' =>'user not found'],404);
+            return response()->json(['message' =>'لا يوجد مستخدم بهذا الحساب'],404);
         }
         if($user->block){
            return response()->json([
-            'message' => 'Your account has been blocked for violating our privacy policy.',
+            'message' => 'حسابك هذا تم حظره بسبب انتهاك خصوصية موقعنا',
             'status' => 'blocked',
             'code' => 403
         ], 403);
         }
         if(!Hash::check($valide['password'],$user->password))
         {
-            return response()->json(['message' =>'Not correct password'],401);
+            return response()->json(['message' =>'كلمة المرور غير صحيحة'],401);
+        }
+        if($user->role === 'admin'){
+            return response()->json(['message' =>'لا يمكنك تسجيل الدخول من هنا'],400);
         }
         $token=$user->createToken('auth_token')->plainTextToken;
         return response()->json(['data' =>['token' => $token]],200);
@@ -88,12 +92,12 @@ class UserController extends Controller
     try {
         $validData = $request->validate([
             'image' => 'nullable|file|mimes:jpeg,png,jpg',
-            'street' => 'required|string',
-            'city' => 'required|string',
-            'country' =>'required|string',
-            'work' => 'required|string',
-            'live' => 'required|string',
-            'education' => 'required|string',
+            'street' => 'nullable|string',
+            'city' => 'nullable|string',
+            'country' =>'nullable|string',
+            'work' => 'nullable|string',
+            'live' => 'nullable|string',
+            'education' => 'nullable|string',
             'bio' => 'nullable|string'
         ]);
     } catch (\Illuminate\Validation\ValidationException $e) {

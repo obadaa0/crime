@@ -12,7 +12,8 @@ class Post extends Model
     protected $fillable=[
         'user_id',
         'content',
-        'media'
+        'media',
+        'isNews'
     ];
 protected static function booted()
 {
