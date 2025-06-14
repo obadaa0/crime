@@ -144,34 +144,22 @@ class PostController extends Controller
         ] ],200);
     }
 
-     public function getAllPost(Request $request)
+    public function getAllPost(Request $request)
 {
     $user = AuthHelper::getUserFromToken($request);
-
     if (!$user) {
         return response()->json(['message' => 'user not found'], 404);
     }
-
     $posts = Post::where('isNews', '!=', true)->inRandomOrder()->get();
-    if ($posts->isEmpty()) {
-        return response()->json(['message' => "can't find any post"], 204);
-    }
     $news = Post::where('isNews', true)->latest()->first();
-    if ($news) {
-        $posts->prepend($news);
-    }
     $userPost = [];
     $otherPost = [];
     foreach ($posts as $post) {
-
-        if ($post->isNews && is_string($post->content)) {
-    $decoded = json_decode($post->content, true);
-    if (is_array($decoded)) {
-        $post->content = implode("\n", $decoded);
-    }
-}
-        if ($news && $post->id === $news->id) {
-            $post['is_news'] = true;
+        if (is_string($post->content)) {
+            $decoded = json_decode($post->content, true);
+            if (is_array($decoded)) {
+                $post->content = implode("\n", $decoded);
+            }
         }
         $isFriend = Friend::where(function ($query) use ($user, $post) {
             $query->where('user_id', $user->id)
@@ -195,13 +183,38 @@ class PostController extends Controller
         if ($post->user_id == $user->id && $post->created_at->isToday()) {
             $post['his_post'] = true;
             $userPost[] = $post;
-            continue;
+        } else {
+            $otherPost[] = $post;
         }
-
-
-        $otherPost[] = $post;
     }
-    $filterPost = array_merge($userPost, $otherPost);
+    $filterPost = [];
+    if ($news) {
+
+        if (is_string($news->content)) {
+            $decoded = json_decode($news->content, true);
+            if (is_array($decoded)) {
+                $news->content = implode("\n", $decoded);
+            }
+        }
+        $news['is_news'] = true;
+        $news['is_friend'] = false;
+        $news->loadCount([
+            'reactions as likes',
+            'comment as comments'
+        ]);
+        $hasLiked = $news->reactions()
+            ->where('reaction_type', 'like')
+            ->where('user_id', $user->id)
+            ->exists();
+        $news->has_liked = $hasLiked;
+        $news['user_name'] = $news->user->firstname . ' ' . $news->user->lastname;
+        $news['profile_image'] = $news->user->profile_image;
+        $filterPost[] = $news;
+    }
+    $filterPost = array_merge($filterPost, $userPost, $otherPost);
+    if (empty($filterPost)) {
+        return response()->json(['message' => "can't find any post"], 204);
+    }
     return response()->json([
         'message' => 'Successfully response',
         'data' => [
@@ -209,7 +222,6 @@ class PostController extends Controller
         ]
     ], 200);
 }
-
 public function showPost(Post $post) {
     $post->loadCount('reactions as likes')
         ->loadCount('comment as comments');
