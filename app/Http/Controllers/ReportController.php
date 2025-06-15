@@ -9,6 +9,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Predis\Command\Redis\HTTL;
 
 class ReportController extends Controller
 {
@@ -19,6 +20,8 @@ class ReportController extends Controller
                 'description' => 'required|string',
                 'media' => 'required|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi',
                 'location' => 'string',
+                'lng' => '',
+                'lat' => ''
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['message' => $e->errors()], 400);
@@ -47,6 +50,20 @@ class ReportController extends Controller
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (RequestException $e) {
             return response()->json(['error' => $e->getMessage()], 400);
+        };
+        try {
+            $predict = Http::timeout(100)->post('https://4f1c-169-150-218-29.ngrok-free.app/predict', [
+                'lan' => $validData['lng'],
+                'lat' => $validData['lat']
+            ]);
+            if ($predict->successful()) {
+            }
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        } catch (ConnectionException $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        } catch (RequestException $e) {
+            return response()->json(['error' => $e->getMessage()]);
         };
         $validData['media'] = MediaHelper::StoreMedia('reports', $request);
         $validData['crime_type'] = "fighting";
