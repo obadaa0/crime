@@ -52,12 +52,13 @@ class ReportController extends Controller
             return response()->json(['error' => $e->getMessage()], 400);
         };
         try {
-            $predict = Http::timeout(100)->post('https://4f1c-169-150-218-29.ngrok-free.app/predict', [
+            $predict = Http::timeout(100)->post('https://c8e5-185-252-220-126.ngrok-free.app/predict', [
                 'latitude' => $validData['lng'],
                 'longitude' => $validData['lat']
             ]);
             if ($predict->successful()) {
-                $validData['predicted'] = json_encode($predict);
+                $predictionData = $predict->json();
+                $validData['predicted'] = json_encode($predictionData);
             }
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()]);
@@ -66,7 +67,7 @@ class ReportController extends Controller
         } catch (RequestException $e) {
             return response()->json(['error' => $e->getMessage()]);
         };
-        $validData['predicted'] = json_encode([$validData['lng'], $validData['lat']]);
+        // $validData['predicted'] = json_encode([$validData['lng'], $validData['lat']]);
         $validData['media'] = MediaHelper::StoreMedia('reports', $request);
         $validData['crime_type'] = "fighting";
         $report = $user->reports()->create($validData);
