@@ -14,49 +14,45 @@ class ReportController extends Controller
 {
     public function create(Request $request)
     {
-        try{
+        try {
             $validData = $request->validate([
                 'description' => 'required|string',
                 'media' => 'required|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi',
-                'location' => 'string'
+                'location' => 'string',
+                'Lat'  => 'required',
+                'Lon' => 'required'
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e){
-            return response()->json(['message' => $e->errors()],400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => $e->errors()], 400);
         }
         $user = AuthHelper::getUserFromToken($request);
-        if(!$user){
+        if (!$user) {
             return response()->json(['message' => "unAuth"]);
         }
-        try{
+        try {
             $file = $request->file('media');
             $checkFromAI = Http::timeout(100)->attach(
                 'file',
                 file_get_contents($file->getRealPath()),
-                 $file->getClientOriginalName()
+                $file->getClientOriginalName()
             )->post('https://0048-212-102-51-98.ngrok-free.app/classify');
-            if($checkFromAI->successful())
-            {
+            if ($checkFromAI->successful()) {
                 $result = $checkFromAI->json();
-                if($result['label'] == 'Normal')
-                {
-                    return response()->json(['message' => 'no crime here '],400);
+                if ($result['label'] == 'Normal') {
+                    return response()->json(['message' => 'no crime here '], 400);
                 }
                 $validData['crime_type'] = $result['label'];
             }
-        }
-        catch(Exception $e){
-            return response()->json(['error' => $e->getMessage()],400);
-        }
-        catch(ConnectionException $e)
-        {
-            return response()->json(['error' => $e->getMessage()],400);
-        }
-        catch(RequestException $e){
-            return response()->json(['error' => $e->getMessage()],400);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        } catch (ConnectionException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        } catch (RequestException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
         };
-        $validData['media'] = MediaHelper::StoreMedia('reports',$request);
+        $validData['media'] = MediaHelper::StoreMedia('reports', $request);
         $validData['crime_type'] = "fighting";
-       $report = $user->reports()->create($validData);
-        return response()->json(['message'=>'report send successfully', 'data' =>$report],200);
+        $report = $user->reports()->create($validData);
+        return response()->json(['message' => 'report send successfully', 'data' => $report], 200);
     }
 }
