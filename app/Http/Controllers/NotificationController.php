@@ -47,11 +47,12 @@ class NotificationController extends Controller
             return response()->json(['message' => "قم بتسجيل الدخول اولا"], 401);
         }
         $user->loadCount([
-            'notifications as notifications'
+            'notifications as notifications' => function ($query) {
+                $query->where('is_read', false);
+            }
         ]);
         return response()->json(['data' => ['notifications_number' => $user->notifications]]);
     }
-
     public function addNotificationInfo($notifications)
     {
         foreach ($notifications as $notification) {

@@ -30,7 +30,7 @@ class PostController extends Controller
                 ]);
             }
             try {
-                $response = Http::timeout(100)->post('https://19f5-212-102-51-98.ngrok-free.app/predict', [
+                $response = Http::timeout(100)->post('https://4f1c-169-150-218-29.ngrok-free.app/predict', [
                     'text' => $validatedData['content']
                 ]);
                 if ($response->successful()) {
