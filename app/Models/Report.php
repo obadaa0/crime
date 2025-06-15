@@ -14,9 +14,7 @@ class Report extends Model
         'status',
         'media',
         'crime_type',
-        'location',
-        'Lat',
-        'Lon'
+        'location'
     ];
 
     public function User()
