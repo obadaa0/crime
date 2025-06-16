@@ -76,7 +76,7 @@ class PasswordResetController extends Controller
         try {
             $user = User::where('email', $request['email'])->firstOrFail();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 400);
+            return response()->json(['message' => 'لا يوجد مستخدم'], 400);
         }
         $reset = PasswordReset::where('user_id', $user->id)
             ->where('used', false)
