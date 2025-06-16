@@ -27,7 +27,7 @@ class PasswordResetController extends Controller
         }
         $user = User::where('email', $validData['email'])->first();
         if (!$user) {
-            return response()->json(['message' => 'قم بتسجيل الدخول اولا'], 404);
+            return response()->json(['message' => 'لا يوجد مستخدم'], 404);
         }
         try {
 
