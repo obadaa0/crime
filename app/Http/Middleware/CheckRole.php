@@ -17,17 +17,16 @@ class CheckRole
     public function handle(Request $request, Closure $next): Response
     {
         $token = PersonalAccessToken::findToken($request->bearerToken());
-        if(!$token){
-            return response()->json(['message' => 'unAuth'],401);
+        if (!$token) {
+            return response()->json(['message' => 'سجل الدخول اولا'], 401);
         }
         $user = $token->tokenable;
-        if(!$user){
-            return response()->json(['message' => 'unAuth'],401);
+        if (!$user) {
+            return response()->json(['message' => 'سجل الدخول اولا'], 401);
         }
-        if(!($user->role === 'police')){
-            return response()->json(['message' => 'unAuth'],401);
+        if (!($user->role === 'police')) {
+            return response()->json(['message' => 'سجل الدخول اولا'], 401);
         }
         return $next($request);
-
     }
 }

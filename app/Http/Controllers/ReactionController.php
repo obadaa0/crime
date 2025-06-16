@@ -45,7 +45,7 @@ class ReactionController extends Controller
             }
             if ($existingReaction->reaction_type === $validated['reaction_type']) {
                 $existingReaction->delete();
-                return response()->json(['message' => 'تمت اضافة اعجاب بنجاح']);
+                return response()->json(['message' => 'تمت ازالة اعجاب بنجاح']);
             }
         } else {
             PostReaction::create([

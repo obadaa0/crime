@@ -69,7 +69,7 @@ class ReportController extends Controller
         };
         // $validData['predicted'] = json_encode([$validData['lng'], $validData['lat']]);
         $validData['media'] = MediaHelper::StoreMedia('reports', $request);
-        $validData['crime_type'] = "fighting";
+        // $validData['crime_type'] = "fighting";
         $report = $user->reports()->create($validData);
         return response()->json(['message' => 'report send successfully', 'data' => $report], 200);
     }

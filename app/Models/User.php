@@ -75,23 +75,6 @@ class User extends Authenticatable
             ->get();
         return $friendsAsUser->merge($friendsAsFriend)->unique('id');
     }
-    public function getAllFriendsAttribute()
-    {
-        $friendsFromMe = $this->friends()->pluck('users.id')->toArray();
-        $friendsToMe = $this->friendsOf()->pluck('users.id')->toArray();
-
-        $allFriendIds = array_unique(array_merge($friendsFromMe, $friendsToMe));
-
-        return User::whereIn('id', $allFriendIds)->get();
-    }
-
-    public function getAllFriendsCountAttribute()
-    {
-        $friendsFromMeCount = $this->friends()->count();
-        $friendsToMeCount = $this->friendsOf()->count();
-
-        return $friendsFromMeCount + $friendsToMeCount;
-    }
 
     public function notifications()
     {
