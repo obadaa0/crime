@@ -163,7 +163,7 @@ class PostController extends Controller
             $post->has_liked = $hasLiked;
             $post['user_name'] = $post->user->firstname . ' ' . $post->user->lastname;
             $post['profile_image'] = $post->user->profile_image;
-            if ($post->user_id == $user->id && $post->created_at->isToday()) {
+            if ($post->user_id == $user->id) {
                 $post['his_post'] = true;
                 $userPost[] = $post;
             } else {
